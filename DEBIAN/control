@@ -1,0 +1,7 @@
+Package: script-caunter
+Version: 1.0
+Architecture: all
+Maintainer: teren88
+Description: A script to count files in the /etc directory.
+ This script counts the number of files (excluding directories and symlinks)
+ in the /etc directory.

@@ -1,0 +1,59 @@
+name: Build RPM and DEB Packages
+
+on:
+  push:
+    branches:
+      - main  
+  pull_request:
+    branches:
+      - main  
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm build-essential fakeroot dpkg-dev
+
+      - name: Set up RPM build directories
+        run: |
+          mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+
+      - name: Copy files to RPM build directories
+        run: |
+          cp script_caunter.sh ~/rpmbuild/SOURCES/script_caunter.sh
+          cp script_caunter.spec ~/rpmbuild/SPECS/script_caunter.spec
+
+      - name: Build RPM package
+        run: |
+          rpmbuild -ba ~/rpmbuild/SPECS/script_caunter.spec
+
+      - name: Set up DEB build directory structure
+        run: |
+          mkdir -p ~/debbuild/script_caunter-1.0/usr/local/bin
+          mkdir -p ~/debbuild/script_caunter-1.0/usr/share/doc/script_caunter
+          mkdir -p ~/debbuild/script_caunter-1.0/DEBIAN
+
+          cp script_caunter.sh ~/debbuild/script_caunter-1.0/usr/local/bin/
+          cp DEBIAN/control ~/debbuild/script_caunter-1.0/DEBIAN/control
+          cp DEBIAN/rules ~/debbuild/script_caunter-1.0/DEBIAN/rules
+          cp DEBIAN/compat ~/debbuild/script_caunter-1.0/DEBIAN/compat
+
+      - name: Build DEB package
+        run: |
+          cd ~/debbuild/script_caunter-1.0
+          dpkg-deb --build . ../script_caunter-1.0.deb
+
+      - name: Upload RPM and DEB artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: script_caunter_package
+          path: |
+            ~/rpmbuild/RPMS/noarch/script_caunter-1.0-1.noarch.rpm
+            ~/debbuild/script_caunter-1.0.deb

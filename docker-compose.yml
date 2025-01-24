@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  jenkins-master:
+    build:
+      context: .
+      dockerfile: Dockerfile.master
+    container_name: jenkins-master
+    ports:
+      - '8080:8080'
+      - '50000:50000'
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./your_repo:/var/jenkins_home/workspace/your_pipeline
+    restart: always
+    user: '1000:1000'
+
+  builder-node:
+    build:
+      context: .
+      dockerfile: Dockerfile.builder
+    container_name: builder-node
+    restart: always
+    volumes:
+      - builder_home:/home/jenkins
+    user: '1001:1001'
+    depends_on:
+      - jenkins-master
+
+volumes:
+  jenkins_home:
+  builder_home:

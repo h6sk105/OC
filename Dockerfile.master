@@ -1,0 +1,8 @@
+FROM jenkins/jenkins:lts
+USER root
+RUN apt-get update && apt-get install -y docker.io
+RUN getent group jenkins || groupadd -g 1000 jenkins && \
+    id -u jenkins || useradd -m -u 1000 -g 1000 jenkins
+USER jenkins
+VOLUME /var/jenkins_home
+EXPOSE 8080 50000
